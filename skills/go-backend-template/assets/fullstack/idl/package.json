@@ -1,0 +1,11 @@
+{
+  "name": "__PROJECT_NAME__-idl-tools",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "devDependencies": {
+    "swagger-typescript-api": "13.13.0"
+  }
+}

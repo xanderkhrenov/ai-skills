@@ -4,7 +4,7 @@
 
 ## Навыки
 
-- [go-backend-template](skills/go-backend-template) — каркас Go backend с DDD и Clean Architecture, Docker/Make-файлами и коротким README.
+- [go-backend-template](skills/go-backend-template) — Go-монолит с DDD и Clean Architecture; опциональный профиль с отдельными UI/IDL-подмодулями и protobuf-first API.
 
 ## Установка в Codex
 
@@ -23,4 +23,11 @@ $go-backend-template Создай проект orders-service в ./orders-servic
 ```
 
 Для генерации нужны Python 3 и Go; для соответствующих команд — Make и Docker.
-Директория назначения должна быть новой или пустой.
+Для обычного backend директория должна быть новой или пустой.
+Профиль `fullstack` дополняет существующий репозиторий с инициализированными
+подмодулями `ui` и `idl`: React/TypeScript/Vite, gRPC-Gateway, Buf и генерация
+Fetch-клиента. Для генерации также нужны Buf, Node/npm; версии закреплены в профиле.
+
+```text
+$go-backend-template Подготовь fullstack-каркас в существующем проекте с подмодулями ui и idl
+```

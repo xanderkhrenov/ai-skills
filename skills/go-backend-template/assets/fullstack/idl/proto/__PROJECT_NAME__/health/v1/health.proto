@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package __API_NAMESPACE__.health.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {title: "__PROJECT_NAME__ API" version: "1"}
+};
+
+// HealthService reports process availability, not readiness of future dependencies.
+service HealthService {
+  rpc Check(CheckRequest) returns (CheckResponse) {
+    option (google.api.http) = {get: "/api/v1/health"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      operation_id: "CheckHealth"
+      tags: "health"
+    };
+  }
+}
+
+message CheckRequest {}
+
+message CheckResponse {
+  string status = 1;
+}

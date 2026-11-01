@@ -1,18 +1,20 @@
 ---
 name: go-backend-template
-description: Scaffold a Go backend modular monolith with DDD and Clean Architecture in the ThreeDotsLabs style, using usecase instead of app, and a concise Russian README. Use for creating a new project skeleton, not implementing features or refactoring an existing application.
+description: Scaffold a Go modular monolith with DDD and Clean Architecture, using usecase instead of app. Supports a backend-only skeleton or an optional protobuf-first profile with separate UI and IDL Git submodules. Use for project scaffolding, not business features or refactoring an existing application.
 ---
 
 # Go Backend Template
 
-Создавай только шаблон проекта и лаконичный README по согласованной структуре.
-Используй готовые файлы из `assets/template` через `scripts/scaffold.py`.
+Создавай шаблон проекта и лаконичный русский README через `scripts/scaffold.py`.
+По умолчанию используй профиль `backend` из `assets/template`.
+При запросе UI/IDL-подмодулей используй `--profile fullstack`, прочитав
+[references/fullstack.md](references/fullstack.md); его assets дополняют базовый шаблон.
 
 ## Параметры и запуск
 
 Определи каталог назначения и имя проекта из запроса или текущего контекста.
-Генератор принимает новый или пустой каталог и не перезаписывает файлы.
-Если выбранная директория непустая, выведи только «Директория должна быть пустой.»
+В профиле `backend` генератор принимает новый или пустой каталог.
+Если для `backend` выбранная директория непустая, выведи только «Директория должна быть пустой.»
 и остановись. Другой каталог автоматически не выбирай.
 
 Используй указанный пользователем Go module path. Если он не указан, возьми имя
@@ -38,9 +40,11 @@ python3 <skill-dir>/scripts/scaffold.py <destination> \
 - `platform`, `tests`, миграции и `deploy` описаны в README и появляются вместе с реализациями; пустые каталоги и `.gitkeep` не добавляй.
 - Dockerfile, `.dockerignore`, `compose.yaml`, Makefile — в корне.
 
-Не добавляй бизнес-логику, примеры сценариев, тесты, архитектурные проверки,
+В обычном профиле не добавляй бизнес-логику, примеры сценариев, тесты, архитектурные проверки,
 линтеры, CI, сторонние Go-зависимости или длинное руководство, если их отдельно
-не запросили. Не копируй код и документацию из текущего проекта поверх шаблона.
+не запросили. В `fullstack` создавай только предусмотренные профилем технические
+реализации, тест и зависимости. Не копируй код и документацию текущего проекта
+поверх шаблона.
 
 Проверь генерацию, форматирование и сборку доступными локальными инструментами
 (`make check build`, `docker compose config --quiet`). Не запускай контейнеры

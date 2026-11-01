@@ -1,4 +1,4 @@
 interface:
   display_name: "Go Backend Template"
-  short_description: "Шаблон Go backend с DDD и Clean Architecture"
-  default_prompt: "Используй $go-backend-template для создания каркаса Go-проекта и лаконичного README."
+  short_description: "Go-монолит с DDD, опционально UI и protobuf IDL"
+  default_prompt: "Используй $go-backend-template для создания каркаса Go-проекта; при необходимости выбери профиль с UI и IDL."
