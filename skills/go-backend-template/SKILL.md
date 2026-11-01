@@ -37,6 +37,9 @@ python3 <skill-dir>/scripts/scaffold.py <destination> \
 - В терминологии ThreeDotsLabs `ports` — входные обработчики, `adapters` — исходящие подключения.
 - Контракт репозитория относится к доменной модели; остальные интерфейсы зависимостей — к сценарию-потребителю.
 - Другие контексты доступны через их `ports/module` из адаптера интеграции.
+- В `fullstack` единый контракт этих вызовов и сетевого API — protobuf в IDL.
+  `ports/module` предоставляет alias сгенерированного `ServiceServer`; прямые
+  вызовы и HTTP gateway используют общую реализацию без локальной сети.
 - `platform`, `tests`, миграции и `deploy` описаны в README и появляются вместе с реализациями; пустые каталоги и `.gitkeep` не добавляй.
 - Dockerfile, `.dockerignore`, `compose.yaml`, Makefile — в корне.
 

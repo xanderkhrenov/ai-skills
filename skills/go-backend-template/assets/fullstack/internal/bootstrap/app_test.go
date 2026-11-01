@@ -2,14 +2,21 @@ package bootstrap
 
 import (
 	"context"
-	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+
+	healthv1 "__MODULE_PATH__/internal/gen/health/v1"
 )
 
-func TestHealthThroughHTTPGateway(t *testing.T) {
+func TestHealthThroughHTTPAndGRPC(t *testing.T) {
 	httpListener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -34,25 +41,39 @@ func TestHealthThroughHTTPGateway(t *testing.T) {
 			t.Error("backend did not stop")
 		}
 	})
+	connection, err := grpc.NewClient(grpcListener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer connection.Close()
+	rpcContext, stop := context.WithTimeout(ctx, 5*time.Second)
+	defer stop()
+	want, err := healthv1.NewHealthServiceClient(connection).Check(rpcContext, &healthv1.CheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := &http.Client{Timeout: time.Second}
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		response, err := client.Get("http://" + httpListener.Addr().String() + "/api/v1/health")
 		if err == nil {
-			var body struct {
-				Status string `json:"status"`
+			body := new(healthv1.CheckResponse)
+			payload, readErr := io.ReadAll(response.Body)
+			if readErr != nil {
+				_ = response.Body.Close()
+				t.Fatal(readErr)
 			}
-			decodeErr := json.NewDecoder(response.Body).Decode(&body)
+			unmarshalErr := protojson.Unmarshal(payload, body)
 			_ = response.Body.Close()
-			if response.StatusCode == http.StatusOK && decodeErr == nil {
-				if body.Status != "serving" {
-					t.Fatalf("unexpected health: %q", body.Status)
+			if response.StatusCode == http.StatusOK && unmarshalErr == nil {
+				if !proto.Equal(want, body) {
+					t.Fatalf("gRPC and HTTP differ: grpc=%v http=%v", want, body)
 				}
 				return
 			}
 		}
 		if time.Now().After(deadline) {
-			t.Fatal("HTTP health did not become available through gRPC gateway")
+			t.Fatal("HTTP health did not become available through the direct gateway")
 		}
 		time.Sleep(10 * time.Millisecond)
 	}

@@ -8,12 +8,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
 	healthv1 "__MODULE_PATH__/internal/gen/health/v1"
-	"__MODULE_PATH__/internal/platform/health"
+	healthhttp "__MODULE_PATH__/internal/platform/health/ports/http"
+	healthmodule "__MODULE_PATH__/internal/platform/health/ports/module"
 )
 
 type Config struct {
@@ -46,24 +45,19 @@ func Run(ctx context.Context, config Config) error {
 	return Serve(ctx, httpListener, grpcListener)
 }
 
-// Serve keeps HTTP and gRPC in one process; the gateway uses a loopback connection.
+// Serve shares one service implementation between direct, HTTP and gRPC callers.
 func Serve(ctx context.Context, httpListener, grpcListener net.Listener) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	healthAPI := healthmodule.New()
 	server := grpc.NewServer()
-	healthv1.RegisterHealthServiceServer(server, health.NewServer())
+	healthv1.RegisterHealthServiceServer(server, healthAPI)
 	errorsCh := make(chan error, 2)
 	go func() { errorsCh <- server.Serve(grpcListener) }()
 	defer server.Stop()
 
-	_, port, err := net.SplitHostPort(grpcListener.Addr().String())
+	gateway, err := healthhttp.NewHandler(ctx, healthAPI)
 	if err != nil {
-		return err
-	}
-	gateway := runtime.NewServeMux()
-	if err := healthv1.RegisterHealthServiceHandlerFromEndpoint(ctx, gateway,
-		net.JoinHostPort("127.0.0.1", port),
-		[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}); err != nil {
 		return err
 	}
 	httpServer := &http.Server{Handler: gateway, ReadHeaderTimeout: 5 * time.Second}
