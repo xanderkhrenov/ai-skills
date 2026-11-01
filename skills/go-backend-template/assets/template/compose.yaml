@@ -1,0 +1,5 @@
+services:
+  app:
+    image: __PROJECT_NAME__:local
+    build:
+      context: .
